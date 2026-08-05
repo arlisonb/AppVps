@@ -1,0 +1,20 @@
+agent/.env
+agent/venv/
+agent/__pycache__/
+agent/**/__pycache__/
+*.pyc
+.DS_Store
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/captures/
+android/.externalNativeBuild/
+
+# Secrets
+*.keystore
+*.jks
