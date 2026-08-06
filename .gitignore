@@ -18,3 +18,5 @@ android/.externalNativeBuild/
 # Secrets
 *.keystore
 *.jks
+TokenAgente.txt
+*.env

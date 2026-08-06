@@ -22,6 +22,16 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
+object SshModule {
+
+    @Provides
+    @Singleton
+    fun provideSshDiscovery(): com.vpsguardian.app.data.ssh.SshDiscovery =
+        com.vpsguardian.app.data.ssh.SshDiscovery()
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     @Provides

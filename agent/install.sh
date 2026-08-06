@@ -13,10 +13,22 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Criar usuário
+# Criar grupo e usuário
+if ! getent group "$USER" &>/dev/null; then
+    groupadd -r "$USER"
+    echo "Grupo $USER criado"
+fi
+
 if ! id "$USER" &>/dev/null; then
-    useradd -r -s /bin/false -d "$INSTALL_DIR" "$USER"
+    useradd -r -g "$USER" -s /bin/false -d "$INSTALL_DIR" "$USER"
     echo "Usuário $USER criado"
+fi
+
+# Grupos suplementares (somente se existirem)
+SUPP_GROUPS=""
+if getent group docker &>/dev/null; then
+    usermod -aG docker "$USER" 2>/dev/null || true
+    SUP_GROUPS="SupplementaryGroups=docker"
 fi
 
 # Criar diretórios
@@ -50,8 +62,8 @@ fi
 cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
 [Unit]
 Description=VPS Guardian Agent
-After=network.target docker.service
-Wants=docker.service
+After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -64,16 +76,14 @@ Restart=always
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
-
-# Permissões para monitoramento
-SupplementaryGroups=docker
+${SUPP_GROUPS}
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Permissões para systemctl, docker, pm2
-usermod -aG docker,systemd-journal "$USER" 2>/dev/null || true
+# Permissões extras
+usermod -aG systemd-journal "$USER" 2>/dev/null || true
 
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"

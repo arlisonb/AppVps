@@ -83,19 +83,45 @@ Ao conectar, o agente executa automaticamente:
 
 ## App Android
 
-### Requisitos
+### Gerar APK (sem Android Studio)
 
-- Android Studio Ladybug ou superior
-- JDK 17
-- Android SDK 35
-- Dispositivo com Android 8.0+ (API 26)
+**Requisitos mínimos:**
+- JDK 17+ (`java -version`)
+- Android SDK (`ANDROID_HOME` configurado)
 
-### Build
+**Windows (PowerShell):**
+```powershell
+cd android
+.\build-apk.ps1
+```
+
+**Linux/macOS:**
+```bash
+cd android
+chmod +x build-apk.sh
+./build-apk.sh
+```
+
+**APK gerado em:**
+```
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**Via GitHub Actions (sem instalar nada localmente):**
+1. Acesse: `https://github.com/arlisonb/AppVps/actions`
+2. Execute o workflow **Build APK**
+3. Baixe o artifact `vps-guardian-debug-apk`
+
+### Build manual com Gradle
 
 ```bash
 cd android
 ./gradlew assembleDebug
 ```
+
+### Requisitos do dispositivo
+
+- Android 8.0+ (API 26)
 
 ### Funcionalidades
 

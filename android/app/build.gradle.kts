@@ -121,6 +121,9 @@ dependencies {
     // Pull to refresh
     implementation("androidx.compose.material:material:1.7.6")
 
+    // SSH
+    implementation("com.hierynomus:sshj:0.38.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")

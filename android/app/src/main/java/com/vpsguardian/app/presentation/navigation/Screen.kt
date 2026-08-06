@@ -14,6 +14,8 @@ import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String) {
+    data object Login : Screen("login")
+    data object Home : Screen("home")
     data object Dashboard : Screen("dashboard")
     data object Services : Screen("services/{vpsId}") {
         fun createRoute(vpsId: Long) = "services/$vpsId"

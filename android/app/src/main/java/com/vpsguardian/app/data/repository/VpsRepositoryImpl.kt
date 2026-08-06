@@ -73,7 +73,8 @@ class VpsRepositoryImpl @Inject constructor(
             ?: throw Exception("VPS não encontrada")
 
         val token = decryptToken(entity.encryptedToken)
-        val api = createApi(entity.ip, entity.port, token)
+        val accessToken = getAccessToken(entity.ip, entity.port, token)
+        val api = createApi(entity.ip, entity.port, accessToken)
         val inventory = api.getInventory()
 
         val updated = inventory.vps.toVpsUpdate(entity.toDomain(token))
@@ -112,13 +113,13 @@ class VpsRepositoryImpl @Inject constructor(
         encrypted
     }
 
-    private fun createApi(ip: String, port: Int, token: String): VpsAgentApi {
+    private fun createApi(ip: String, port: Int, accessToken: String): VpsAgentApi {
         val client = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val authRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer ${getAccessToken(ip, port, token)}")
+                    .addHeader("Authorization", "Bearer $accessToken")
                     .build()
                 chain.proceed(authRequest)
             }
