@@ -16,6 +16,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Home : Screen("home")
+    data object ProjectDetail : Screen("project/{projectId}") {
+        fun createRoute(projectId: String) = "project/$projectId"
+    }
+    data object ProjectServiceDetail : Screen("project/{projectId}/service/{serviceName}") {
+        fun createRoute(projectId: String, serviceName: String) =
+            "project/$projectId/service/${java.net.URLEncoder.encode(serviceName, "UTF-8")}"
+    }
     data object Dashboard : Screen("dashboard")
     data object Services : Screen("services/{vpsId}") {
         fun createRoute(vpsId: Long) = "services/$vpsId"

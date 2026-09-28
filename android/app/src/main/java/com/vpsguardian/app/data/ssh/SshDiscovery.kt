@@ -3,8 +3,6 @@ package com.vpsguardian.app.data.ssh
 import com.vpsguardian.app.domain.model.Service
 import com.vpsguardian.app.domain.model.ServiceStatus
 import com.vpsguardian.app.domain.model.ServiceType
-import com.vpsguardian.app.presentation.components.ServiceIconMapper
-import net.schmizz.sshj.SSHClient
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,23 +10,15 @@ import javax.inject.Singleton
 @Singleton
 class SshDiscovery @Inject constructor() {
 
-    fun discover(ssh: SSHClient): List<Service> {
+    fun discover(ssh: SshConnection): List<Service> {
         val services = mutableListOf<Service>()
-        services.addAll(parseSystemd(execQuiet(ssh, "systemctl list-units --type=service --state=active,failed,inactive --no-pager --plain --no-legend 2>/dev/null")))
-        services.addAll(parseDocker(execQuiet(ssh, "docker ps -a --format '{{.Names}}|{{.Image}}|{{.Status}}|{{.Ports}}' 2>/dev/null")))
-        services.addAll(parsePm2(execQuiet(ssh, "pm2 jlist 2>/dev/null")))
-        services.addAll(parsePorts(execQuiet(ssh, "ss -tulpn 2>/dev/null | grep LISTEN")))
+        services.addAll(parseSystemd(ssh.execQuiet("systemctl list-units --type=service --state=active,failed,inactive --no-pager --plain --no-legend 2>/dev/null")))
+        services.addAll(parseDocker(ssh.execQuiet("docker ps -a --format '{{.Names}}|{{.Image}}|{{.Status}}|{{.Ports}}' 2>/dev/null")))
+        services.addAll(parsePm2(ssh.execQuiet("pm2 jlist 2>/dev/null")))
+        services.addAll(parsePorts(ssh.execQuiet("ss -tulpn 2>/dev/null | grep LISTEN")))
 
         return deduplicate(services)
     }
-
-    private fun execQuiet(ssh: SSHClient, command: String): String = try {
-        ssh.startSession().use { session ->
-            val cmd = session.exec(command)
-            cmd.join(15, java.util.concurrent.TimeUnit.SECONDS)
-            cmd.inputStream.bufferedReader().readText()
-        }
-    } catch (_: Exception) { "" }
 
     private fun parseSystemd(output: String): List<Service> {
         if (output.isBlank()) return emptyList()
@@ -148,7 +138,7 @@ class SshDiscovery @Inject constructor() {
             "traefik" in t -> ServiceType.TRAEFIK
             "minio" in t -> ServiceType.MINIO
             "portainer" in t -> ServiceType.PORTAINER
-            "wppconnect" in t || "wpp-connect" in t -> ServiceType.WPPCONNECT
+            "wppconnect" in t || "wpp-connect" in t || "whatsapp" in t -> ServiceType.WPPCONNECT
             "evolution" in t -> ServiceType.EVOLUTION_API
             "typebot" in t -> ServiceType.TYPEBOT
             "supabase" in t -> ServiceType.SUPABASE

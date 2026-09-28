@@ -1,5 +1,7 @@
 package com.vpsguardian.app.presentation.login
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +18,14 @@ import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,15 +46,37 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var ip by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("root") }
     var password by rememberSaveable { mutableStateOf("") }
     var sshPort by rememberSaveable { mutableStateOf("22") }
+    var formLoaded by rememberSaveable { mutableStateOf(false) }
 
-    val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(uiState.savedForm, formLoaded) {
+        if (!formLoaded && uiState.savedForm != null) {
+            ip = uiState.savedForm!!.ip
+            username = uiState.savedForm!!.username
+            password = uiState.savedForm!!.password
+            sshPort = uiState.savedForm!!.sshPort.toString()
+            formLoaded = true
+        }
+    }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) onLoginSuccess()
+    }
+
+    if (uiState.isAutoLoggingIn) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(uiState.statusMessage ?: "Reconectando...", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        return
     }
 
     Scaffold { padding ->
@@ -80,7 +106,8 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Conecte com IP e senha da VPS",
+                text = if (uiState.hasSavedLogin) "VPS salva — conecte ou altere os dados"
+                else "Conecte com IP e senha da VPS",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -132,6 +159,27 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = uiState.rememberLogin,
+                    onCheckedChange = { viewModel.setRememberLogin(it) }
+                )
+                Text(
+                    "Manter login salvo",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            if (uiState.hasSavedLogin) {
+                TextButton(onClick = { viewModel.forgetSavedLogin(); formLoaded = false; password = "" }) {
+                    Text("Esquecer VPS salva")
+                }
+            }
+
             if (uiState.error != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -139,9 +187,16 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
+            } else if (uiState.isLoading && uiState.statusMessage != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = uiState.statusMessage!!,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
@@ -157,7 +212,7 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Conectar e Descobrir Sistemas")
+                    Text(if (uiState.hasSavedLogin) "Conectar" else "Conectar e Descobrir Sistemas")
                 }
             }
         }

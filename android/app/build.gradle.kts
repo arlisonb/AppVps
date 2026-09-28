@@ -15,8 +15,8 @@ android {
         applicationId = "com.vpsguardian.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 10
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,6 +51,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+            excludes += "META-INF/versions/**"
         }
     }
 }
@@ -105,6 +107,8 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+
     // Biometric
     implementation("androidx.biometric:biometric:1.1.0")
 
@@ -121,8 +125,8 @@ dependencies {
     // Pull to refresh
     implementation("androidx.compose.material:material:1.7.6")
 
-    // SSH
-    implementation("com.hierynomus:sshj:0.38.0")
+    // SSH (JSch - compatível com Android)
+    implementation("com.github.mwiede:jsch:0.2.21")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

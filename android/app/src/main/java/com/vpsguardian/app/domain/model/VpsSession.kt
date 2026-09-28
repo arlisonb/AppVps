@@ -7,6 +7,13 @@ data class VpsCredentials(
     val sshPort: Int = 22
 )
 
+data class ProcessInfo(
+    val pid: Int = 0,
+    val name: String,
+    val memoryMb: Float = 0f,
+    val memoryPercent: Float = 0f
+)
+
 data class VpsSession(
     val credentials: VpsCredentials,
     val hostname: String = "",
@@ -15,6 +22,11 @@ data class VpsSession(
     val cpuPercent: Float = 0f,
     val ramPercent: Float = 0f,
     val diskPercent: Float = 0f,
+    val swapPercent: Float = 0f,
     val services: List<Service> = emptyList(),
-    val connectedAt: Long = System.currentTimeMillis()
+    val projects: List<Project> = emptyList(),
+    val topProcesses: List<ProcessInfo> = emptyList(),
+    val wppHealth: Map<String, WppHealthSnapshot> = emptyMap(),
+    val connectedAt: Long = System.currentTimeMillis(),
+    val lastCheck: Long = System.currentTimeMillis()
 )

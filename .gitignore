@@ -14,6 +14,8 @@ android/.idea/
 android/*.iml
 android/captures/
 android/.externalNativeBuild/
+.gradle-home/
+.tmp/
 
 # Secrets
 *.keystore

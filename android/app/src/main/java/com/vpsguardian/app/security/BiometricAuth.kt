@@ -9,13 +9,14 @@ class BiometricAuth(private val activity: FragmentActivity) {
 
     fun isAvailable(): Boolean {
         val manager = BiometricManager.from(activity)
-        return manager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) ==
-            BiometricManager.BIOMETRIC_SUCCESS
+        val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        return manager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
     }
 
     fun authenticate(
         title: String = "VPS Guardian",
-        subtitle: String = "Autentique-se para continuar",
+        subtitle: String = "Desbloqueie para acessar a VPS",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -23,8 +24,10 @@ class BiometricAuth(private val activity: FragmentActivity) {
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
             .setSubtitle(subtitle)
-            .setNegativeButtonText("Cancelar")
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
             .build()
 
         val biometricPrompt = BiometricPrompt(
